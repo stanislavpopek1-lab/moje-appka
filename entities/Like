@@ -1,0 +1,28 @@
+{
+  "name": "Like",
+  "type": "object",
+  "properties": {
+    "from_user": {
+      "type": "string",
+      "title": "From User"
+    },
+    "to_user": {
+      "type": "string",
+      "title": "To User"
+    },
+    "type": {
+      "type": "string",
+      "title": "Type",
+      "enum": [
+        "like",
+        "super_like",
+        "pass"
+      ]
+    }
+  },
+  "required": [
+    "from_user",
+    "to_user",
+    "type"
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "name": "UserProfile",
+  "type": "object",
+  "properties": {
+    "display_name": {
+      "type": "string",
+      "title": "Jm\u00e9no"
+    },
+    "age": {
+      "type": "number",
+      "title": "V\u011bk"
+    },
+    "gender": {
+      "type": "string",
+      "title": "Pohlav\u00ed",
+      "enum": [
+        "Male",
+        "Female",
+        "Non-binary",
+        "Other"
+      ]
+    },
+    "looking_for": {
+      "type": "string",
+      "title": "Hled\u00e1m",
+      "enum": [
+        "Male",
+        "Female",
+        "Everyone"
+      ]
+    },
+    "bio": {
+      "type": "string",
+      "title": "O mn\u011b"
+    },
+    "photos": {
+      "type": "array",
+      "title": "Fotky",
+      "items": {
+        "type": "string"
+      }
+    },
+    "interests": {
+      "type": "array",
+      "title": "Z\u00e1jmy",
+      "items": {
+        "type": "string"
+      }
+    },
+    "location": {
+      "type": "string",
+      "title": "M\u011bsto"
+    },
+    "latitude": {
+      "type": "number",
+      "title": "Zem\u011bpisn\u00e1 \u0161\u00ed\u0159ka"
+    },
+    "longitude": {
+      "type": "number",
+      "title": "Zem\u011bpisn\u00e1 d\u00e9lka"
+    },
+    "is_active": {
+      "type": "boolean",
+      "title": "Aktivn\u00ed",
+      "default": true
+    }
+  },
+  "required": [
+    "display_name",
+    "age",
+    "gender",
+    "bio"
+  ]
+}

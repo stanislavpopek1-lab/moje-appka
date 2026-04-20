@@ -1,0 +1,41 @@
+{
+  "name": "Message",
+  "type": "object",
+  "properties": {
+    "match_id": {
+      "type": "string",
+      "title": "Match ID"
+    },
+    "sender": {
+      "type": "string",
+      "title": "Sender"
+    },
+    "content": {
+      "type": "string",
+      "title": "Content"
+    },
+    "media_url": {
+      "type": "string",
+      "title": "Media URL"
+    },
+    "media_type": {
+      "type": "string",
+      "title": "Media Type",
+      "enum": [
+        "image",
+        "video",
+        "none"
+      ]
+    },
+    "is_read": {
+      "type": "boolean",
+      "title": "Read",
+      "default": false
+    }
+  },
+  "required": [
+    "match_id",
+    "sender",
+    "content"
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "name": "Match",
+  "type": "object",
+  "properties": {
+    "user1": {
+      "type": "string",
+      "title": "User 1"
+    },
+    "user2": {
+      "type": "string",
+      "title": "User 2"
+    },
+    "status": {
+      "type": "string",
+      "title": "Status",
+      "enum": [
+        "active",
+        "unmatched"
+      ],
+      "default": "active"
+    },
+    "last_message": {
+      "type": "string",
+      "title": "Last Message"
+    },
+    "last_message_at": {
+      "type": "string",
+      "title": "Last Message At",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "user1",
+    "user2"
+  ]
+}

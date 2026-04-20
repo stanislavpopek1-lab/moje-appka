@@ -1,0 +1,36 @@
+{
+  "name": "Post",
+  "type": "object",
+  "properties": {
+    "caption": {
+      "type": "string",
+      "title": "Caption"
+    },
+    "media_url": {
+      "type": "string",
+      "title": "Media URL"
+    },
+    "media_type": {
+      "type": "string",
+      "title": "Media Type",
+      "enum": [
+        "image",
+        "video",
+        "text"
+      ]
+    },
+    "likes_count": {
+      "type": "number",
+      "title": "Likes Count",
+      "default": 0
+    },
+    "comments_count": {
+      "type": "number",
+      "title": "Comments Count",
+      "default": 0
+    }
+  },
+  "required": [
+    "caption"
+  ]
+}
