@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MapPin, ChevronLeft, ChevronRight } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export default function ProfileCard({ profile, children }) {
@@ -18,72 +18,82 @@ export default function ProfileCard({ profile, children }) {
   };
 
   return (
-    <div className="relative w-full max-w-md mx-auto aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl group">
+    <div className="relative w-full max-w-md mx-auto aspect-[3/4] rounded-3xl overflow-hidden shadow-2xl group"
+      style={{ boxShadow: "0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06)" }}
+    >
       {/* Photo */}
       <img
         src={photos[photoIndex]}
         alt={profile?.display_name}
-        className="absolute inset-0 w-full h-full object-cover transition-transform duration-500"
+        className="absolute inset-0 w-full h-full object-cover transition-all duration-700"
       />
 
-      {/* Photo indicators */}
+      {/* Cinematic gradient */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/10" />
+
+      {/* Photo strip indicators */}
       {photos.length > 1 && (
-        <div className="absolute top-3 left-3 right-3 flex gap-1 z-10">
+        <div className="absolute top-4 left-4 right-4 flex gap-1.5 z-10">
           {photos.map((_, i) => (
             <div
               key={i}
-              className={`h-0.5 flex-1 rounded-full transition-all ${
-                i === photoIndex ? "bg-white" : "bg-white/40"
+              className={`h-[3px] flex-1 rounded-full transition-all duration-300 ${
+                i === photoIndex
+                  ? "bg-white"
+                  : "bg-white/25"
               }`}
             />
           ))}
         </div>
       )}
 
-      {/* Photo navigation */}
+      {/* Photo navigation zones */}
       {photos.length > 1 && (
         <>
-          <button onClick={prevPhoto} className="absolute left-0 top-0 bottom-20 w-1/3 z-10" />
-          <button onClick={nextPhoto} className="absolute right-0 top-0 bottom-20 w-1/3 z-10" />
+          <button onClick={prevPhoto} className="absolute left-0 top-0 bottom-24 w-2/5 z-10" />
+          <button onClick={nextPhoto} className="absolute right-0 top-0 bottom-24 w-2/5 z-10" />
         </>
       )}
 
-      {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-
-      {/* Info */}
-      <div className="absolute bottom-0 left-0 right-0 p-5 text-white z-10">
-        <div className="flex items-end gap-2 mb-2">
-          <h2 className="text-2xl font-heading font-bold">
+      {/* Info panel */}
+      <div className="absolute bottom-0 left-0 right-0 p-6 text-white z-10">
+        <div className="flex items-baseline gap-2 mb-1">
+          <h2 className="text-3xl font-heading font-bold tracking-tight">
             {profile?.display_name}
           </h2>
-          <span className="text-xl font-light mb-0.5">{profile?.age}</span>
+          <span className="text-2xl font-light text-white/70">{profile?.age}</span>
         </div>
+
         {profile?.location && (
-          <div className="flex items-center gap-1 text-white/80 text-sm mb-3">
-            <MapPin className="w-3.5 h-3.5" />
+          <div className="flex items-center gap-1.5 text-white/60 text-xs mb-3 font-medium tracking-wide uppercase">
+            <MapPin className="w-3 h-3" />
             <span>{profile.location}</span>
           </div>
         )}
+
         {profile?.bio && (
-          <p className="text-sm text-white/80 line-clamp-2 mb-3">{profile.bio}</p>
+          <p className="text-sm text-white/70 line-clamp-2 mb-3 leading-relaxed">{profile.bio}</p>
         )}
+
         {profile?.interests?.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {profile.interests.slice(0, 5).map((interest) => (
-              <Badge
+          <div className="flex flex-wrap gap-1.5 mb-4">
+            {profile.interests.slice(0, 4).map((interest) => (
+              <span
                 key={interest}
-                variant="secondary"
-                className="bg-white/20 text-white border-0 backdrop-blur-sm text-xs"
+                className="text-[11px] px-2.5 py-1 rounded-full font-medium tracking-wide"
+                style={{
+                  background: "rgba(255,255,255,0.12)",
+                  backdropFilter: "blur(10px)",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                }}
               >
                 {interest}
-              </Badge>
+              </span>
             ))}
           </div>
         )}
 
-        {/* Action buttons slot */}
-        {children && <div className="mt-4">{children}</div>}
+        {children && <div>{children}</div>}
       </div>
     </div>
   );

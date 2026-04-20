@@ -1,172 +1,115 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
-import { Heart } from "lucide-react";
+import { Heart, Sparkles, Users, Star } from "lucide-react";
 
-const WOMAN_IMG = "https://media.base44.com/images/public/69d103e2ba2a13f268d7f059/dc7e1fc59_generated_image.png";
-const MAN_IMG = "https://media.base44.com/images/public/69d103e2ba2a13f268d7f059/2737756c4_generated_image.png";
-
-const INTENTS = [
-  { label: "💞 Hledám partnera/partnerku", value: "partner" },
-  { label: "💬 Nezávazné seznámení", value: "casual" },
-  { label: "👫 Nová přátelství", value: "friends" },
+const steps = [
+  {
+    icon: Heart,
+    title: "Najdi své zlatíčko",
+    subtitle: "Objevuj lidi, kteří ti sedí do srdce",
+  },
+  {
+    icon: Sparkles,
+    title: "Propojte se okamžitě",
+    subtitle: "Zhodnoťte shodu, chatujte a potkejte se",
+  },
+  {
+    icon: Users,
+    title: "Připoj se ke komunitě",
+    subtitle: "Sdílej své momenty s podobně smýšlejícími lidmi",
+  },
 ];
 
 export default function OnboardingModal() {
-  const [step, setStep] = useState(1); // 1 = gender, 2 = intent, 3 = register
-  const [selectedGender, setSelectedGender] = useState(null);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [step, setStep] = useState(0);
+  const [direction, setDirection] = useState(1);
 
-  const handleGender = (gender) => {
-    setSelectedGender(gender);
-    setStep(2);
-  };
-
-  const handleIntent = () => {
-    setStep(3);
-  };
-
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-    base44.auth.redirectToLogin();
+  const handleNext = () => {
+    if (step < steps.length - 1) {
+      setDirection(1);
+      setStep((s) => s + 1);
+    }
   };
 
   const handleLogin = () => {
     base44.auth.redirectToLogin();
   };
 
+  const current = steps[step];
+  const Icon = current.icon;
+
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      {/* Blur backdrop */}
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-md" />
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4"
+      style={{ background: "rgba(0,0,0,0.85)", backdropFilter: "blur(16px)" }}
+    >
+      <motion.div
+        initial={{ y: 60, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 280, damping: 28 }}
+        className="w-full max-w-sm glass-strong rounded-3xl p-8 text-center"
+        style={{ border: "1px solid rgba(220,60,90,0.2)", boxShadow: "0 32px 80px rgba(0,0,0,0.5)" }}
+      >
+        {/* Logo */}
+        <div className="w-14 h-14 rounded-2xl bg-gradient-flame mx-auto mb-8 flex items-center justify-center glow-sm">
+          <span className="text-xl font-heading font-bold" style={{color: "hsl(35 25% 8%)"}}>Z</span>
+        </div>
 
-      <AnimatePresence mode="wait">
-        {/* Step 1: Gender selection */}
-        {step === 1 && (
+        {/* Step content */}
+        <AnimatePresence mode="wait">
           <motion.div
-            key="step1"
-            initial={{ opacity: 0, scale: 0.92, y: 16 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.92, y: -16 }}
-            transition={{ duration: 0.3 }}
-            className="relative bg-card rounded-3xl shadow-2xl p-8 w-full max-w-md text-center"
+            key={step}
+            initial={{ x: direction * 30, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -direction * 30, opacity: 0 }}
+            transition={{ duration: 0.22 }}
           >
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-              <Heart className="w-6 h-6 text-primary fill-primary/40" />
+            <div className="w-16 h-16 rounded-2xl bg-primary/10 mx-auto mb-5 flex items-center justify-center">
+              <Icon className="w-8 h-8 text-primary" />
             </div>
-            <h2 className="text-2xl font-heading font-bold mb-1">Vítejte na Flame</h2>
-            <p className="text-muted-foreground text-sm mb-8">Kdo jsi?</p>
-
-            <div className="flex gap-5 justify-center mb-8">
-              {/* Woman */}
-              <button
-                onClick={() => handleGender("Female")}
-                className="group flex flex-col items-center gap-3 cursor-pointer"
-              >
-                <div className="relative w-32 h-36 rounded-2xl overflow-hidden ring-2 ring-transparent group-hover:ring-primary transition-all duration-200 shadow-lg group-hover:shadow-primary/30 group-hover:scale-105 transform">
-                  <img src={WOMAN_IMG} alt="Woman" className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                  <span className="absolute bottom-2 left-0 right-0 text-white text-sm font-semibold">Žena</span>
-                </div>
-              </button>
-
-              {/* Man */}
-              <button
-                onClick={() => handleGender("Male")}
-                className="group flex flex-col items-center gap-3 cursor-pointer"
-              >
-                <div className="relative w-32 h-36 rounded-2xl overflow-hidden ring-2 ring-transparent group-hover:ring-primary transition-all duration-200 shadow-lg group-hover:shadow-primary/30 group-hover:scale-105 transform">
-                  <img src={MAN_IMG} alt="Man" className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                  <span className="absolute bottom-2 left-0 right-0 text-white text-sm font-semibold">Muž</span>
-                </div>
-              </button>
-            </div>
-
-            <button
-              onClick={handleLogin}
-              className="text-sm text-blue-500 hover:text-blue-600 hover:underline font-medium transition-colors"
-            >
-              Již máte účet? <span className="font-semibold">Přihlásit se</span>
-            </button>
+            <h2 className="text-2xl font-heading font-bold mb-2">{current.title}</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed">{current.subtitle}</p>
           </motion.div>
-        )}
+        </AnimatePresence>
 
-        {/* Step 2: Intent */}
-        {step === 2 && (
-          <motion.div
-            key="step2"
-            initial={{ opacity: 0, scale: 0.92, y: 16 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.92, y: -16 }}
-            transition={{ duration: 0.3 }}
-            className="relative bg-card rounded-3xl shadow-2xl p-8 w-full max-w-md text-center"
-          >
-            <h2 className="text-2xl font-heading font-bold mb-1">Co hledáš?</h2>
-            <p className="text-muted-foreground text-sm mb-7">Pomůžeme ti najít správné lidi</p>
+        {/* Step dots */}
+        <div className="flex justify-center gap-1.5 my-6">
+          {steps.map((_, i) => (
+            <div
+              key={i}
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                i === step ? "bg-primary w-5" : "bg-white/15 w-1.5"
+              }`}
+            />
+          ))}
+        </div>
 
-            <div className="space-y-3 mb-8">
-              {INTENTS.map((intent) => (
-                <button
-                  key={intent.value}
-                  onClick={handleIntent}
-                  className="w-full py-4 px-5 rounded-2xl border-2 border-border hover:border-primary hover:bg-primary/5 text-sm font-medium transition-all duration-200 text-left"
-                >
-                  {intent.label}
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleLogin}
-              className="text-sm text-blue-500 hover:text-blue-600 hover:underline font-medium transition-colors"
-            >
-              Již máte účet? <span className="font-semibold">Přihlásit se</span>
+        {step < steps.length - 1 ? (
+          <div className="flex gap-3">
+            <button onClick={handleLogin} className="flex-1 h-11 rounded-2xl glass text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all">
+              Přihlásit se
             </button>
-          </motion.div>
-        )}
-
-        {/* Step 3: Sign up CTA */}
-        {step === 3 && (
-          <motion.div
-            key="step3"
-            initial={{ opacity: 0, scale: 0.92, y: 16 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.92, y: -16 }}
-            transition={{ duration: 0.3 }}
-            className="relative bg-card rounded-3xl shadow-2xl p-8 w-full max-w-md text-center"
-          >
-            <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-              <Heart className="w-7 h-7 text-primary fill-primary/40" />
-            </div>
-            <h2 className="text-2xl font-heading font-bold mb-2">Téměř hotovo!</h2>
-            <p className="text-muted-foreground text-sm mb-8">
-              Vytvořte si bezplatný účet a začněte se setkávat s úžasnými lidmi na Flame. to start connecting with amazing people on Flame.
-            </p>
-
-            <Button
-              onClick={handleRegister}
-              className="w-full rounded-full h-12 text-base font-semibold mb-3"
-            >
-              Vytvořit bezplatný účet
-            </Button>
-
-            <button
-              onClick={handleLogin}
-              className="text-sm text-blue-500 hover:text-blue-600 hover:underline font-medium transition-colors"
-            >
-              Již máte účet? <span className="font-semibold">Přihlásit se</span>
+            <button onClick={handleNext}
+              className="flex-1 h-11 rounded-2xl font-semibold text-sm hover:opacity-90 transition-opacity"
+              style={{ background: "linear-gradient(135deg, hsl(42 90% 55%), hsl(35 80% 50%))", color: "hsl(35 25% 8%)" }}>
+              Další
             </button>
-          </motion.div>
+          </div>
+        ) : (
+          <button onClick={handleLogin}
+            className="w-full h-12 rounded-2xl font-semibold hover:opacity-90 transition-opacity"
+            style={{
+              background: "linear-gradient(135deg, hsl(42 90% 55%), hsl(35 80% 50%))",
+              boxShadow: "0 8px 32px rgba(218,165,32,0.35)",
+              color: "hsl(35 25% 8%)"
+            }}>
+            Začít — Připojit se ke Zlatíčka
+          </button>
         )}
-      </AnimatePresence>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

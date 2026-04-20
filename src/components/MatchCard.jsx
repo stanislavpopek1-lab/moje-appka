@@ -29,7 +29,7 @@ export default function MatchCard({ match, otherProfile, currentUser }) {
           )}
         </div>
         <p className="text-xs text-muted-foreground truncate mt-0.5">
-          {match.last_message || "Say hello! 👋"}
+          {match.last_message || "Řekni Ahoj! 👋"}
         </p>
       </div>
     </Link>
