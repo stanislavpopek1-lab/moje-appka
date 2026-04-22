@@ -1,71 +1,41 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { onAuthStateChanged, signOut } from "firebase/auth";
-import { auth } from "@/firebase";
 
 const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
+export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
-  const [isLoadingPublicSettings, setIsLoadingPublicSettings] = useState(false);
   const [authError, setAuthError] = useState(null);
-  const [appPublicSettings, setAppPublicSettings] = useState(null);
+  const [isLoadingPublicSettings, setIsLoadingPublicSettings] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      if (firebaseUser) {
-        setUser(firebaseUser);
-        setIsAuthenticated(true);
-      } else {
-        setUser(null);
-        setIsAuthenticated(false);
-      }
+    // 🔥 FAKE USER (dokud nemáš Firebase)
+    const fakeUser = {
+      id: "1",
+      name: "Test User"
+    };
 
-      setIsLoadingAuth(false);
-    });
-
-    return () => unsubscribe();
+    setUser(fakeUser);
+    setIsLoadingAuth(false);
   }, []);
 
-  // logout přes Firebase
-  const logout = async () => {
-    try {
-      await signOut(auth);
-      setUser(null);
-      setIsAuthenticated(false);
-    } catch (err) {
-      console.error("Logout error:", err);
-    }
-  };
-
-  //  (řeší onboarding modal)
   const navigateToLogin = () => {
-    // empty — login řeší OnboardingModal
+    console.log("redirect to login (fake)");
   };
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        isAuthenticated,
         isLoadingAuth,
-        isLoadingPublicSettings,
         authError,
-        appPublicSettings,
-        logout,
+        isLoadingPublicSettings,
         navigateToLogin
       }}
     >
       {children}
     </AuthContext.Provider>
   );
-};
+}
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within AuthProvider");
-  }
-  return context;
-};
+export const useAuth = () => useContext(AuthContext);

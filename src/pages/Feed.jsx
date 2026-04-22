@@ -48,7 +48,12 @@ export default function Feed() {
 
   const loadFeed = async () => {
     const user = auth.currentUser;
-    if (!user) return navigate("/login");
+
+    // ✅ FIX: zabrání nekonečnému loadingu
+    if (!user) {
+      setLoading(false);
+      return;
+    }
 
     setCurrentUser(user);
 
@@ -203,9 +208,15 @@ export default function Feed() {
   };
 
   /* ========================= DELETE ========================= */
-  const handleDelete = async (postId) => {
-    await deleteDoc(doc(db, "posts", postId));
-    setPosts((prev) => prev.filter((p) => p.id !== postId));
+  const handleDelete = async (post) => {
+    // ✅ FIX: jen autor může mazat
+    if (post.createdBy !== currentUser.email) {
+      toast.error("Nemůžeš smazat cizí příspěvek!");
+      return;
+    }
+
+    await deleteDoc(doc(db, "posts", post.id));
+    setPosts((prev) => prev.filter((p) => p.id !== post.id));
     toast.success("Smazáno");
   };
 
@@ -298,7 +309,7 @@ export default function Feed() {
           profile={profiles[post.createdBy]}
           currentUser={currentUser}
           myProfile={myProfile}
-          onDelete={handleDelete}
+          onDelete={(post) => handleDelete(post)} // ✅ FIX
           onLikeToggle={handleLikeToggle}
         />
       ))}
