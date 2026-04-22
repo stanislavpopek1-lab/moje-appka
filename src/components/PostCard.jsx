@@ -1,10 +1,23 @@
 import { useState } from "react";
-import { base44 } from "@/api/base44Client";
 import { Heart, MessageCircle, Send, MoreHorizontal, Trash2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
 import { cs } from "date-fns/locale";
+
+import { db, auth } from "@/firebase";
+import {
+  collection,
+  addDoc,
+  query,
+  where,
+  getDocs,
+  orderBy,
+  updateDoc,
+  doc,
+  deleteDoc
+} from "firebase/firestore";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,134 +25,194 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export default function PostCard({ post, profile, currentUser, myProfile, onDelete, onLikeToggle, onRequireProfile }) {
+export default function PostCard({
+  post,
+  profile,
+  myProfile,
+  onDelete,
+  onLikeToggle,
+  onRequireProfile
+}) {
   const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState([]);
   const [commentsLoaded, setCommentsLoaded] = useState(false);
   const [newComment, setNewComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const photo = profile?.photos?.[0];
-  const isOwn = post.created_by === currentUser?.email;
+  const user = auth.currentUser;
 
+  const photo = profile?.photos?.[0];
+  const isOwn = post.created_by === user?.email;
+
+  // 🔥 LOAD COMMENTS (FIREBASE)
   const toggleComments = async () => {
     if (!commentsLoaded) {
-      const data = await base44.entities.PostComment.filter({ post_id: post.id }, "created_date");
+      const q = query(
+        collection(db, "PostComments"),
+        where("post_id", "==", post.id)
+      );
+
+      const snap = await getDocs(q);
+
+      const data = snap.docs.map((d) => ({
+        id: d.id,
+        ...d.data()
+      }));
+
       setComments(data);
       setCommentsLoaded(true);
     }
+
     setShowComments((v) => !v);
   };
 
+  // 🔥 ADD COMMENT
   const submitComment = async (e) => {
     e.preventDefault();
     if (!newComment.trim()) return;
     if (onRequireProfile && !onRequireProfile(true)) return;
+
     setSubmitting(true);
-    const comment = await base44.entities.PostComment.create({ post_id: post.id, content: newComment.trim() });
-    await base44.entities.Post.update(post.id, { comments_count: (post.comments_count || 0) + 1 });
-    setComments((c) => [...c, comment]);
+
+    const commentRef = await addDoc(collection(db, "PostComments"), {
+      post_id: post.id,
+      content: newComment.trim(),
+      created_by: user.email,
+      created_date: new Date().toISOString()
+    });
+
+    await updateDoc(doc(db, "Posts", post.id), {
+      comments_count: (post.comments_count || 0) + 1
+    });
+
+    setComments((c) => [
+      ...c,
+      {
+        id: commentRef.id,
+        post_id: post.id,
+        content: newComment.trim(),
+        created_by: user.email
+      }
+    ]);
+
     setNewComment("");
     setSubmitting(false);
   };
 
+  // 🔥 DELETE POST
+  const handleDelete = async () => {
+    await deleteDoc(doc(db, "Posts", post.id));
+    onDelete(post.id);
+  };
+
   return (
     <div className="glass rounded-2xl overflow-hidden">
-      {/* Header */}
+
+      {/* HEADER */}
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center gap-3">
           {photo ? (
-            <img src={photo} alt="" className="w-9 h-9 rounded-xl object-cover" />
+            <img src={photo} className="w-9 h-9 rounded-xl object-cover" />
           ) : (
             <div className="w-9 h-9 rounded-xl bg-primary/20 flex items-center justify-center">
               <Sparkles className="w-4 h-4 text-primary" />
             </div>
           )}
+
           <div>
-            <p className="text-sm font-semibold leading-tight">{profile?.display_name || "Uživatel"}</p>
-            <p className="text-[10px] text-muted-foreground tracking-wide">
-              {post.created_date ? format(new Date(post.created_date), "d. MMM", { locale: cs }) : ""}
+            <p className="text-sm font-semibold">
+              {profile?.display_name || "Uživatel"}
+            </p>
+            <p className="text-[10px] text-muted-foreground">
+              {post.created_date
+                ? format(new Date(post.created_date), "d. MMM", { locale: cs })
+                : ""}
             </p>
           </div>
         </div>
+
         {isOwn && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-xl w-8 h-8 text-muted-foreground">
+              <Button variant="ghost" size="icon" className="w-8 h-8">
                 <MoreHorizontal className="w-4 h-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="glass border-white/10">
-              <DropdownMenuItem onClick={() => onDelete(post.id)} className="text-destructive focus:text-destructive">
-                <Trash2 className="w-4 h-4 mr-2" /> Smazat příspěvek
+
+            <DropdownMenuContent>
+              <DropdownMenuItem
+                onClick={handleDelete}
+                className="text-red-500"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Smazat
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         )}
       </div>
 
-      {/* Media */}
+      {/* MEDIA */}
       {post.media_url && post.media_type === "image" && (
-        <img src={post.media_url} alt="" className="w-full max-h-96 object-cover" />
+        <img src={post.media_url} className="w-full max-h-96 object-cover" />
       )}
+
       {post.media_url && post.media_type === "video" && (
         <video src={post.media_url} controls className="w-full max-h-96" />
       )}
 
-      {/* Caption */}
+      {/* CAPTION */}
       {post.caption && (
-        <p className="px-4 pt-3 pb-1 text-sm leading-relaxed text-foreground/90">{post.caption}</p>
+        <p className="px-4 pt-3 text-sm">{post.caption}</p>
       )}
 
-      {/* Actions */}
-      <div className="flex items-center gap-1 px-3 py-2.5">
+      {/* ACTIONS */}
+      <div className="flex items-center gap-2 px-3 py-2">
+
         <button
           onClick={() => onLikeToggle(post)}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all duration-200 ${
-            post._liked
-              ? "text-primary bg-primary/10"
-              : "text-muted-foreground hover:text-foreground hover:bg-white/5"
-          }`}
+          className="flex items-center gap-1 px-3 py-1 rounded-xl text-xs"
         >
-          <Heart className={`w-4 h-4 ${post._liked ? "fill-primary" : ""}`} />
-          <span>{post.likes_count || 0}</span>
+          <Heart className={`w-4 h-4 ${post._liked ? "fill-red-500" : ""}`} />
+          {post.likes_count || 0}
         </button>
+
         <button
           onClick={toggleComments}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all duration-200"
+          className="flex items-center gap-1 px-3 py-1 rounded-xl text-xs"
         >
           <MessageCircle className="w-4 h-4" />
-          <span>{post.comments_count || 0}</span>
+          {post.comments_count || 0}
         </button>
       </div>
 
-      {/* Comments */}
+      {/* COMMENTS */}
       {showComments && (
-        <div className="border-t border-white/5 px-4 py-3 space-y-3">
+        <div className="border-t px-4 py-3 space-y-3">
+
           {comments.length === 0 && (
-            <p className="text-xs text-muted-foreground">Zatím žádné komentáře. Buď první!</p>
+            <p className="text-xs text-muted-foreground">
+              Žádné komentáře
+            </p>
           )}
+
           {comments.map((c) => (
-            <div key={c.id} className="flex gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0 text-xs font-bold text-primary">
-                {c.created_by?.[0]?.toUpperCase()}
-              </div>
-              <div className="flex-1 bg-white/5 rounded-xl px-3 py-2">
-                <p className="text-[10px] font-semibold text-primary mb-0.5 tracking-wide">{c.created_by}</p>
-                <p className="text-xs text-foreground/80">{c.content}</p>
-              </div>
+            <div key={c.id} className="text-xs bg-white/5 p-2 rounded-xl">
+              <b>{c.created_by}</b>
+              <p>{c.content}</p>
             </div>
           ))}
-          <form onSubmit={submitComment} className="flex gap-2 pt-1">
+
+          <form onSubmit={submitComment} className="flex gap-2">
             <Input
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
-              placeholder={myProfile ? "Přidat komentář..." : "Nejprve si vytvoř profil"}
-              disabled={!myProfile}
-              className="rounded-xl text-xs h-8 bg-white/5 border-white/10 focus-visible:ring-primary/50"
+              placeholder="Napiš komentář..."
+              className="text-xs"
             />
-            <Button type="submit" size="icon" className="rounded-xl w-8 h-8 flex-shrink-0 bg-gradient-flame border-0" disabled={submitting || !newComment.trim() || !myProfile}>
-              <Send className="w-3 h-3" />
+
+            <Button type="submit" disabled={submitting}>
+              <Send className="w-4 h-4" />
             </Button>
           </form>
         </div>

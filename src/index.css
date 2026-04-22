@@ -4,37 +4,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* =========================
+   BASE THEME VARIABLES
+========================= */
 @layer base {
-  :root, .dark {
+  :root {
     --font-heading: 'Playfair Display', serif;
     --font-body: 'DM Sans', sans-serif;
 
-    --background: 35 25% 5%;
-    --foreground: 42 30% 93%;
-    --card: 35 20% 8%;
-    --card-foreground: 42 30% 93%;
-    --popover: 35 20% 8%;
-    --popover-foreground: 42 30% 93%;
-    --primary: 42 90% 55%;
-    --primary-foreground: 35 25% 8%;
-    --secondary: 35 15% 13%;
-    --secondary-foreground: 42 20% 80%;
-    --muted: 35 15% 11%;
-    --muted-foreground: 42 12% 52%;
-    --accent: 42 40% 15%;
-    --accent-foreground: 42 30% 90%;
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 38 18% 16%;
-    --input: 38 15% 13%;
-    --ring: 42 90% 55%;
-    --radius: 1rem;
-
-    --glow-primary: rgba(218, 165, 32, 0.22);
-    --glow-gold: rgba(218, 165, 32, 0.16);
-  }
-
-  .light {
+    /* LIGHT MODE DEFAULT */
     --background: 42 30% 97%;
     --foreground: 35 25% 10%;
     --card: 0 0% 100%;
@@ -59,6 +37,32 @@
     --glow-gold: rgba(218, 165, 32, 0.10);
   }
 
+  /* DARK MODE OVERRIDE */
+  .dark {
+    --background: 35 25% 5%;
+    --foreground: 42 30% 93%;
+    --card: 35 20% 8%;
+    --card-foreground: 42 30% 93%;
+    --popover: 35 20% 8%;
+    --popover-foreground: 42 30% 93%;
+    --primary: 42 90% 55%;
+    --primary-foreground: 35 25% 8%;
+    --secondary: 35 15% 13%;
+    --secondary-foreground: 42 20% 80%;
+    --muted: 35 15% 11%;
+    --muted-foreground: 42 12% 52%;
+    --accent: 42 40% 15%;
+    --accent-foreground: 42 30% 90%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 38 18% 16%;
+    --input: 38 15% 13%;
+    --ring: 42 90% 55%;
+
+    --glow-primary: rgba(218, 165, 32, 0.22);
+    --glow-gold: rgba(218, 165, 32, 0.16);
+  }
+
   * {
     @apply border-border outline-ring/50;
   }
@@ -71,38 +75,45 @@
   ::-webkit-scrollbar {
     width: 4px;
   }
+
   ::-webkit-scrollbar-track {
     background: transparent;
   }
+
   ::-webkit-scrollbar-thumb {
     background: hsl(var(--border));
     border-radius: 99px;
   }
 }
 
+/* =========================
+   UTILITIES
+========================= */
 @layer utilities {
+
+  /* GLASS (UNIVERSAL - FIXED) */
   .glass {
-    background: rgba(255,255,255,0.04);
+    background: rgba(255,255,255,0.06);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .dark .glass {
+    background: rgba(255,255,255,0.04);
     border: 1px solid rgba(255,255,255,0.07);
   }
 
-  .light .glass {
-    background: rgba(0,0,0,0.04);
-    border: 1px solid rgba(0,0,0,0.08);
-  }
-
   .glass-strong {
-    background: rgba(255,255,255,0.07);
+    background: rgba(255,255,255,0.75);
     backdrop-filter: blur(32px);
     -webkit-backdrop-filter: blur(32px);
-    border: 1px solid rgba(255,255,255,0.10);
+    border: 1px solid rgba(0,0,0,0.10);
   }
 
-  .light .glass-strong {
-    background: rgba(255,255,255,0.85);
-    border: 1px solid rgba(0,0,0,0.10);
+  .dark .glass-strong {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.10);
   }
 
   .glow-primary {
@@ -121,12 +132,17 @@
   }
 
   .border-gradient {
-    border-image: linear-gradient(135deg, hsl(42 90% 55% / 0.5), hsl(35 80% 50% / 0.3)) 1;
+    border-image: linear-gradient(
+      135deg,
+      hsl(42 90% 55% / 0.5),
+      hsl(35 80% 50% / 0.3)
+    ) 1;
   }
 
   .noise {
     position: relative;
   }
+
   .noise::before {
     content: '';
     position: absolute;
